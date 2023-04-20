@@ -12,9 +12,12 @@ public class ServerHandler implements Runnable {
 
     private PrintWriter outStream;
     private CountDownLatch latch;
+    private MainWindowController mainWindowController;
 
-    public ServerHandler(CountDownLatch latch) {
+
+    public ServerHandler(CountDownLatch latch, MainWindowController mainWindowController) {
         this.latch = latch;
+        this.mainWindowController = mainWindowController;
     }
 
     public PrintWriter getOutStream() {
@@ -35,10 +38,11 @@ public class ServerHandler implements Runnable {
             outStream = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+            //in that line in and output streams are ready, so we can release stopped thread
             latch.countDown();
 
             // Receiving messages from the client in a separate thread
-            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in));
+            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in, mainWindowController));
             thread.start();
 
             // Sending messages to the client
