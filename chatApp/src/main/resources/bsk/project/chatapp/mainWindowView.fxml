@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="bsk.project.chatapp.MainWindowController" fx:id="mainController">
+  <top>
+  </top>
+
+  <center>
+    <HBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml">
+      <VBox style="-fx-padding: 0 0 0 10px;" alignment="TOP_CENTER">
+        <Label fx:id="welcomeText"/>
+        <ComboBox fx:id="codingAlgorithmComboBox" promptText="Choose coding algorithm">
+          <items>
+            <FXCollections fx:factory="observableArrayList">
+              <String fx:value="alg 1" />
+              <String fx:value="alg 2" />
+              <String fx:value="alg 3" />
+              <String fx:value="alg 4" />
+            </FXCollections>
+          </items>
+        </ComboBox>
+        <Button text="load a file" fx:id="chooseFile" onAction="#onFileChooseClick"/>
+        <Label text="enter a message"/>
+        <TextArea fx:id="messageText" maxHeight="100"/>
+        <Button text="send" fx:id="sendButton" onAction="#onSendButtonClick"/>
+      </VBox>
+      <VBox style="-fx-padding: 0 10px 0 0;" alignment="TOP_CENTER">
+        <Label text="conversation"/>
+        <TextArea fx:id="conversation"/>
+      </VBox>
+    </HBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER">
+      <Label text="© 2023 chatApp" />
+    </HBox>
+  </bottom>
+</BorderPane>
