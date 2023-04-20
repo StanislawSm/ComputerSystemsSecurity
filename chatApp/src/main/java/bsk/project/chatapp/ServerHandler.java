@@ -37,8 +37,6 @@ public class ServerHandler implements Runnable {
 
             latch.countDown();
 
-
-
             // Receiving messages from the client in a separate thread
             Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in));
             thread.start();
