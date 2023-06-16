@@ -1,16 +1,13 @@
 package bsk.project.chatapp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
 public class ClientHandler implements Runnable{
 
-    private PrintWriter outStream;
+    private ObjectOutputStream outStream;
     private MainWindowController mainWindowController;
     private CountDownLatch latch;
     public ClientHandler(CountDownLatch latch, MainWindowController mainWindowController) {
@@ -18,7 +15,7 @@ public class ClientHandler implements Runnable{
         this.latch = latch;
     }
 
-    public PrintWriter getOutStream() {
+    public ObjectOutputStream  getOutStream() {
         return outStream;
     }
 
@@ -31,8 +28,10 @@ public class ClientHandler implements Runnable{
             Socket socket = new Socket(serverAddress, serverPort);
 
             // Creating streams for communication with the server
-            this.outStream = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            OutputStream outputStream = socket.getOutputStream();
+            this.outStream = new ObjectOutputStream(outputStream);
+            InputStream inputStream = socket.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inputStream);
 
             //in that line in and output streams are ready, so we can release stopped thread
             latch.countDown();
@@ -45,7 +44,7 @@ public class ClientHandler implements Runnable{
             BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 String message = console.readLine();
-                outStream.println(message);
+                outStream.writeObject(new Message(message));
             }
 
         } catch (IOException e) {
