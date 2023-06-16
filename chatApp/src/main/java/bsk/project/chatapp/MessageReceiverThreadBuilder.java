@@ -30,7 +30,7 @@ public class MessageReceiverThreadBuilder implements Runnable{
                             break;
                         case FILE_READY:
                             System.out.println(receiverType + ": file ready");
-                            receiveFile("./testFileReceived.pdf");
+                            receiveFile("./" + message.getText());
                             break;
                         default:
                             break;
@@ -55,7 +55,7 @@ public class MessageReceiverThreadBuilder implements Runnable{
         byte[] buffer = new byte[4*1024];
         while (size > 0 && (bytes = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
             fileOutputStream.write(buffer,0,bytes);
-            size -= bytes;      // read upto file size
+            size -= bytes;      // read up to file size
         }
         fileOutputStream.close();
     }

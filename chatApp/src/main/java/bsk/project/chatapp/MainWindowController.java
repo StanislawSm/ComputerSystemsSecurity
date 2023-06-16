@@ -25,7 +25,7 @@ public class MainWindowController {
         file.setTitle("Open File");
         File loadedFilePath = file.showOpenDialog(stage);
         outStream.writeObject(new Message("file ready to be sent"));
-        outStream.writeObject(new Message(MessageType.FILE_READY, ""));
+        outStream.writeObject(new Message(MessageType.FILE_READY, loadedFilePath.getName()));
         sendFile(loadedFilePath.getPath());
     }
 
