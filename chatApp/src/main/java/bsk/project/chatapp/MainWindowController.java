@@ -5,19 +5,16 @@ import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
 
 public class MainWindowController {
     @FXML
     private TextArea conversation;
     @FXML
     private TextArea messageText;
+    private ObjectOutputStream outStream;
 
-    private PrintWriter outStream;
-
-
-    public void setOutStream(PrintWriter outStream) {
+    public void setOutStream(ObjectOutputStream outStream) {
         this.outStream = outStream;
     }
 
@@ -31,13 +28,18 @@ public class MainWindowController {
     }
 
     @FXML
-    protected void onSendButtonClick(){
-
+    protected void onSendButtonClick() throws IOException {
         String input = messageText.getText();
         if(!input.isBlank()) {
             conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
+            //conversation.appendText("Me: " + input + "\n");
             messageText.clear();
-            outStream.println(input);
+            outStream.writeObject(new Message(input));
         }
+    }
+
+    public void onMessageReceived(String message){
+        conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
+        //conversation.appendText("Him: " + message + "\n");
     }
 }

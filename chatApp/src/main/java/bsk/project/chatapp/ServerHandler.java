@@ -1,23 +1,23 @@
 package bsk.project.chatapp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
 public class ServerHandler implements Runnable {
 
-    private PrintWriter outStream;
+    private ObjectOutputStream outStream;
     private CountDownLatch latch;
+    private MainWindowController mainWindowController;
 
-    public ServerHandler(CountDownLatch latch) {
+
+    public ServerHandler(CountDownLatch latch, MainWindowController mainWindowController) {
         this.latch = latch;
+        this.mainWindowController = mainWindowController;
     }
 
-    public PrintWriter getOutStream() {
+    public ObjectOutputStream getOutStream() {
         return outStream;
     }
 
@@ -31,21 +31,24 @@ public class ServerHandler implements Runnable {
             Socket clientSocket = serverSocket.accept();
             System.out.println("Connected with the client!");
 
-            // Creating streams for communication with the client
-            outStream = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            // Creating streams for communication with the server
+            OutputStream outputStream = clientSocket.getOutputStream();
+            this.outStream = new ObjectOutputStream(outputStream);
+            InputStream inputStream = clientSocket.getInputStream();
+            ObjectInputStream in = new ObjectInputStream(inputStream);
 
+            //in that line in and output streams are ready, so we can release stopped thread
             latch.countDown();
 
             // Receiving messages from the client in a separate thread
-            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in));
+            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in, mainWindowController));
             thread.start();
 
             // Sending messages to the client
             BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 String message = console.readLine();
-                outStream.println(message);
+                outStream.writeObject(new Message(message));
             }
 
         } catch (IOException e) {
