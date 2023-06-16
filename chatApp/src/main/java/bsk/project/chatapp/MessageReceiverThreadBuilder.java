@@ -1,6 +1,7 @@
 package bsk.project.chatapp;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
@@ -22,14 +23,40 @@ public class MessageReceiverThreadBuilder implements Runnable{
             try {
                 Message message = (Message)in.readObject();
                 if (message != null) {
-                    System.out.println(receiverType + ": " + message);
-                    mainWindowController.onMessageReceived(message.getText());
+                    switch (message.getMessageType()){
+                        case TEXT:
+                            System.out.println(receiverType + ": " + message);
+                            mainWindowController.onMessageReceived(message.getText());
+                            break;
+                        case FILE_READY:
+                            System.out.println(receiverType + ": file ready");
+                            receiveFile("./testFileReceived.pdf");
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
             } catch (IOException e) {
                 System.out.println("Error while receiving messages from the "+ receiverType + ": " + e.getMessage());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
+    }
+
+    private void receiveFile(String fileName) throws Exception{
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+        long size = in.readLong();     // read file size
+        byte[] buffer = new byte[4*1024];
+        while (size > 0 && (bytes = in.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
+            fileOutputStream.write(buffer,0,bytes);
+            size -= bytes;      // read upto file size
+        }
+        fileOutputStream.close();
     }
 }

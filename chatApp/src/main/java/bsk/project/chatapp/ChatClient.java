@@ -31,7 +31,7 @@ public class ChatClient extends Application{
             throw new RuntimeException(e);
         }
 
-        //finally we have an output stream and we can use it in the main window controller
+        //finally we have an output stream, and we can use it in the main window controller
         controller.setOutStream(clientHandler.getOutStream());
 
         stage.setTitle("chatApp1.0 Client");
