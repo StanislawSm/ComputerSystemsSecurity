@@ -1,5 +1,7 @@
-package bsk.project.chatapp;
+package bsk.project.chatapp.windowsControllers;
 
+import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.message.MessageType;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
@@ -19,12 +21,14 @@ public class MainWindowController {
     }
 
     @FXML
-    protected void onFileChooseClick() {
+    protected void onFileChooseClick() throws Exception {
         Stage stage = (Stage) conversation.getScene().getWindow();
         FileChooser file = new FileChooser();
         file.setTitle("Open File");
-        //loadedFile to be used later
-        File loadedFile = file.showOpenDialog(stage);
+        File loadedFilePath = file.showOpenDialog(stage);
+        outStream.writeObject(new Message("file ready to be sent"));
+        outStream.writeObject(new Message(MessageType.FILE_READY, loadedFilePath.getName()));
+        sendFile(loadedFilePath.getPath());
     }
 
     @FXML
@@ -42,4 +46,21 @@ public class MainWindowController {
         conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
         //conversation.appendText("Him: " + message + "\n");
     }
+
+    private void sendFile(String path) throws Exception{
+        int bytes = 0;
+        File file = new File(path);
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        // send file size
+        outStream.writeLong(file.length());
+        // break file into chunks
+        byte[] buffer = new byte[4*1024];
+        while ((bytes=fileInputStream.read(buffer))!=-1){
+            outStream.write(buffer,0,bytes);
+            outStream.flush();
+        }
+        fileInputStream.close();
+    }
+
 }

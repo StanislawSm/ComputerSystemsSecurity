@@ -1,7 +1,10 @@
-package bsk.project.chatapp;
+package bsk.project.chatapp.handlers;
+
+import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.receiver.MessageReceiverThreadBuilder;
+import bsk.project.chatapp.windowsControllers.MainWindowController;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 

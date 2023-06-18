@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.control.PasswordField?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="bsk.project.chatapp.windowsControllers.LoginClientWindowController" fx:id="loginController">
+  <top>
+  </top>
+
+  <center>
+    <HBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml">
+      <VBox style="-fx-padding: 0 0 0 10px;" alignment="TOP_CENTER">
+        <Label fx:id="welcomeText"/>
+        <Label text="enter a password"/>
+        <PasswordField fx:id="passwordField"/>
+        <Button text="login" fx:id="loginButton" onAction="#onLoginButtonClick"/>
+      </VBox>
+    </HBox>
+  </center>
+
+  <bottom>
+    <HBox alignment="CENTER">
+      <Label text="© 2023 chatApp" />
+    </HBox>
+  </bottom>
+</BorderPane>
