@@ -2,26 +2,29 @@ package bsk.project.chatapp.password;
 
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import bsk.project.chatapp.alertBox.AlertBox;
+
+import java.io.*;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class PasswordUtil {
-    public boolean checkPassword(String password){
-        boolean result = false;
-        File file = new File("./password.txt");
+    public static boolean checkPassword(String password) throws IOException {
+        boolean result;
+        File file = new File("./keys/password/password.txt");
         try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            String passwordFromFile = fileInputStream.readAllBytes().toString();
+            Scanner myReader  = new Scanner(file);
+            String passwordFromFile = myReader.nextLine();
+            if(passwordFromFile.equals(password)){
+                result = true;
+            } else {
+                result = false;
+                AlertBox.infoBox("try again", "wrong password");
+            }
         } catch (FileNotFoundException e) {
-            result = true;
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("password file doesn't exist");
+            result = false;
         }
-
-
         return result;
     }
 }
