@@ -1,5 +1,7 @@
-package bsk.project.chatapp;
+package bsk.project.chatapp.windowsControllers;
 
+import bsk.project.chatapp.ChatServer;
+import bsk.project.chatapp.handlers.ServerHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,7 +12,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-public class LoginClientWindowController {
+public class LoginServerWindowController {
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -20,8 +22,10 @@ public class LoginClientWindowController {
     protected void onLoginButtonClick() throws IOException {
         Stage stage = (Stage) passwordField.getScene().getWindow();
 
+
+        //compare passwords etc.
         //loading a scene from fxml file
-        FXMLLoader fxmlLoader = new FXMLLoader(ChatClient.class.getResource("mainWindowView.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(ChatServer.class.getResource("mainWindowView.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 480, 480);
         //gathering controller Object from loaded scene
         MainWindowController controller = fxmlLoader.getController();
@@ -30,8 +34,8 @@ public class LoginClientWindowController {
         CountDownLatch latch = new CountDownLatch(1);
 
         //Creating client handler with the controller gathered before and the latch
-        ClientHandler clientHandler = new ClientHandler(latch, controller);
-        Thread thread = new Thread(clientHandler);
+        ServerHandler serverHandler = new ServerHandler(latch, controller);
+        Thread thread = new Thread(serverHandler);
         thread.start();
 
         //Here we have to wait for the clientHandler thread to establish a connection with other app, because we need output stream created in that thread
@@ -42,12 +46,11 @@ public class LoginClientWindowController {
         }
 
         //finally we have an output stream, and we can use it in the main window controller
-        controller.setOutStream(clientHandler.getOutStream());
+        controller.setOutStream(serverHandler.getOutStream());
 
-        stage.setTitle("chatApp1.0 Client");
+        stage.setTitle("chatApp1.0 Server");
         stage.setScene(scene);
         stage.show();
-
     }
 
 }

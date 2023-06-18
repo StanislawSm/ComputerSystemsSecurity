@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.BorderPane?>
 
 <?import javafx.scene.control.PasswordField?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="bsk.project.chatapp.LoginServerWindowController" fx:id="loginController">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="bsk.project.chatapp.windowsControllers.LoginServerWindowController" fx:id="loginController">
   <top>
   </top>
 

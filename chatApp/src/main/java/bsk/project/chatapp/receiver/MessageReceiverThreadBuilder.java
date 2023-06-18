@@ -1,6 +1,8 @@
-package bsk.project.chatapp;
+package bsk.project.chatapp.receiver;
 
-import java.io.BufferedReader;
+import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.windowsControllers.MainWindowController;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;

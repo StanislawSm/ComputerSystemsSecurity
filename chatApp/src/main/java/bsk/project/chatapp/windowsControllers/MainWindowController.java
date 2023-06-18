@@ -1,5 +1,7 @@
-package bsk.project.chatapp;
+package bsk.project.chatapp.windowsControllers;
 
+import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.message.MessageType;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;

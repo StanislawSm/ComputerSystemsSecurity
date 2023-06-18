@@ -1,8 +1,6 @@
-package bsk.project.chatapp;
-import java.io.FileInputStream;
+package bsk.project.chatapp.message;
+
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class Message implements Serializable{
 
