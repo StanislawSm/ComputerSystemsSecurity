@@ -77,9 +77,7 @@ public class MainWindowController implements Initializable {
         codingAlgorithmComboBox.setDisable(true);
         messageTextArea.setDisable(true);
         disableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
-        if (!_isServer) {
-            generateSessionKeyButton.setDisable(true);
-        }
+        generateSessionKeyButton.setDisable(true);
     }
 
     /**
@@ -157,32 +155,35 @@ public class MainWindowController implements Initializable {
 
     public void setIsServer(boolean isServer) {
         _isServer = isServer;
+        if(_isServer){
+            generateSessionKeyButton.setDisable(false);
+        }
     }
 
     private void sendCypherModeAndIvSpecToClient() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
-        var encryptedIvSpec = encryptWithRSA(_ivSpec.toString());
-        outStream.writeObject(new Message(MessageType.CYPHER_MODE_CHANGED, encryptedIvSpec, _cipherMode));
+// TODO MS
+        //        var encryptedIvSpec = encryptWithRSA(_ivSpec.toString());
+//        System.out.println("Encrypted cypher mode and ivSpec send to client: " + _cipherMode);
+//        outStream.writeObject(new Message(MessageType.CYPHER_MODE_CHANGED, encryptedIvSpec, _cipherMode));
     }
 
     private void sendSessionKeyToClient() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
         var encryptedKey = encryptWithRSA(_sessionKey);
+        System.out.println("Encrypted session key send to client: " + encryptedKey);
         outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encryptedKey, "none"));
     }
 
     private String encryptWithRSA(String value) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         PublicKey publicKey = _isServer ? getClientPublicKey() : getServerPublicKey();
-        var encrypted = RSAUtil.encryptSessionKeyWithRSA(value, publicKey);
-        System.out.println("Encrypted new session key: " + encrypted);
-
-        return encrypted;
+        return RSAUtil.encryptWithRSA(value, publicKey);
     }
 
     private String decryptSessionKey(String encryptedSessionKey) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        PrivateKey privateKey = _isServer ? getClientPrivateKey() : getServerPrivateKey();
+        PrivateKey privateKey = _isServer ? getServerPrivateKey() : getClientPrivateKey();
         var encryptedSessionKeyBytes = Base64.getDecoder().decode(encryptedSessionKey);
         System.out.println("Received encrypted session key: " + encryptedSessionKey);
 
-        return RSAUtil.decryptSessionKeyWithRSA(encryptedSessionKeyBytes, privateKey);
+        return RSAUtil.decryptWithRSA(encryptedSessionKeyBytes, privateKey);
     }
 
     private void setSessionKey(String sessionKey) {

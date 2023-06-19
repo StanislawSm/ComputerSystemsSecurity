@@ -12,24 +12,19 @@ import java.security.PublicKey;
 import java.util.Base64;
 
 public class RSAUtil {
-    public static String encryptSessionKeyWithRSA(String sessionKey, PublicKey publicKey)
-            throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-
+    public static String encryptWithRSA(String value, PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher encryptCipher = Cipher.getInstance("RSA");
         encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] sessionKeyBytes = sessionKey.getBytes(StandardCharsets.UTF_8);
+        byte[] sessionKeyBytes = value.getBytes(StandardCharsets.UTF_8);
         byte[] encryptedSessionKeyBytes = encryptCipher.doFinal(sessionKeyBytes);
 
         return Base64.getEncoder().encodeToString(encryptedSessionKeyBytes);
     }
 
-    public static String decryptSessionKeyWithRSA(byte[] encryptedSessionKey, PrivateKey privateKey)
-            throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static String decryptWithRSA(byte[] bytes, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher encryptCipher = Cipher.getInstance("RSA");
         encryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] sessionKeyBytes = encryptCipher.doFinal(encryptedSessionKey);
+        byte[] sessionKeyBytes = encryptCipher.doFinal(bytes);
 
         return new String(sessionKeyBytes, StandardCharsets.UTF_8);
     }

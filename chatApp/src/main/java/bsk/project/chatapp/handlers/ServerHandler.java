@@ -12,13 +12,12 @@ import java.util.concurrent.CountDownLatch;
 public class ServerHandler implements Runnable {
 
     private ObjectOutputStream outStream;
-    private CountDownLatch latch;
-    private MainWindowController mainWindowController;
-
+    private final CountDownLatch latch;
+    private final MainWindowController _mainWindowController;
 
     public ServerHandler(CountDownLatch latch, MainWindowController mainWindowController) {
         this.latch = latch;
-        this.mainWindowController = mainWindowController;
+        _mainWindowController = mainWindowController;
     }
 
     public ObjectOutputStream getOutStream() {
@@ -45,7 +44,7 @@ public class ServerHandler implements Runnable {
             latch.countDown();
 
             // Receiving messages from the client in a separate thread
-            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in, mainWindowController));
+            Thread thread = new Thread(new MessageReceiverThreadBuilder("Client", in, _mainWindowController));
             thread.start();
 
             // Sending messages to the client
