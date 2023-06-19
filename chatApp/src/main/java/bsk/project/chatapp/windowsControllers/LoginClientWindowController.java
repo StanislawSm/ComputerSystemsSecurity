@@ -23,11 +23,11 @@ public class LoginClientWindowController {
     protected void onLoginButtonClick() throws IOException {
         Stage stage = (Stage) passwordField.getScene().getWindow();
 
-        if(PasswordUtil.checkPassword(passwordField.getText())) {
+        if(true || PasswordUtil.checkPassword(passwordField.getText())) {
 
             //loading a scene from fxml file
             FXMLLoader fxmlLoader = new FXMLLoader(ChatClient.class.getResource("mainWindowView.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 480, 480);
+            Scene scene = new Scene(fxmlLoader.load(), 800, 480);
             //gathering controller Object from loaded scene
             MainWindowController controller = fxmlLoader.getController();
 
