@@ -28,7 +28,7 @@ public class LoginServerWindowController{
     protected void onLoginButtonClick() throws IOException {
         Stage stage = (Stage) passwordField.getScene().getWindow();
 
-        if(true || PasswordUtil.checkPassword(passwordField.getText())) {
+        if(PasswordUtil.checkPassword(passwordField.getText())) {
             //loading a scene from fxml file
             FXMLLoader fxmlLoader = new FXMLLoader(ChatServer.class.getResource("mainWindowView.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 480);

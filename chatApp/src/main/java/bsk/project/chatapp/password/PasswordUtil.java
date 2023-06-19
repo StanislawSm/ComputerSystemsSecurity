@@ -8,20 +8,18 @@ import java.util.Scanner;
 
 public class PasswordUtil {
     public static boolean checkPassword(String password) {
-        boolean result;
-        File file = new File("./keys/password/password.txt");
         if (Objects.requireNonNull(getPassword()).equals(password)) {
-            result = true;
-        } else {
-            result = false;
-            AlertBox.infoBox("try again", "wrong password");
+            return true;
         }
 
-        return result;
+        AlertBox.infoBox("try again", "wrong password");
+        return false;
     }
 
     public static String getPassword() {
-        File file = new File("./keys/password/password.txt");
+        System.out.println(new File(".").getAbsolutePath());
+        // File file = new File("./keys/password/password.txt");
+        File file = new File("chatapp/keys/password/password.txt");
         try {
             Scanner myReader = new Scanner(file);
             String line = myReader.nextLine();
@@ -30,7 +28,7 @@ public class PasswordUtil {
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
         }
-        
+
         return null;
     }
 }
