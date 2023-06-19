@@ -32,6 +32,7 @@ public class KeysUtil {
         PublicKey publicKey = cert.getPublicKey();
         PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
+        ins.close();
         return new KeyPair(publicKey, privateKey);
     }
 }

@@ -18,6 +18,7 @@ public class PasswordUtil {
                 result = false;
                 AlertBox.infoBox("try again", "wrong password");
             }
+            myReader.close();
         } catch (FileNotFoundException e) {
             System.err.println("password file doesn't exist");
             result = false;
