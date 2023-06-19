@@ -5,9 +5,6 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane fx:id="mainController" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bsk.project.chatapp.windowsControllers.MainWindowController">
-  <top>
-  </top>
-
   <center>
     <HBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml">
       <VBox alignment="TOP_CENTER" style="-fx-padding: 0 0 0 10px;">
@@ -26,7 +23,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-              <Button fx:id="chooseFile" minWidth="62.0" onAction="#onChooseFileButtonClick" text="Choose file" />
+              <Button fx:id="chooseFileButton" minWidth="62.0" onAction="#onChooseFileButtonClick" text="Choose file" />
                   <Label fx:id="sendFileLabel" text="Label" GridPane.columnIndex="1">
                      <GridPane.margin>
                         <Insets left="4.0" right="32.0" />
@@ -63,4 +60,11 @@
       <Label text="© 2023 chatApp" />
     </HBox>
   </bottom>
+   <top>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="generateSessionKeyButton" mnemonicParsing="false" onAction="#onGenerateSessionKeyClick" text="Generate Session Key" />
+         </children>
+      </HBox>
+   </top>
 </BorderPane>

@@ -27,6 +27,7 @@ public class MessageReceiverThreadBuilder implements Runnable{
                 if (message != null) {
                     switch (message.getMessageType()){
                         case TEXT:
+
                             System.out.println(receiverType + ": " + message);
                             mainWindowController.onMessageReceived(message.getText());
                             break;

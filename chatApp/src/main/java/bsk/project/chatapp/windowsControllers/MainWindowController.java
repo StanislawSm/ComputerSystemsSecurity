@@ -5,10 +5,10 @@ import bsk.project.chatapp.message.Message;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -22,12 +22,12 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainWindowController implements Initializable {
     private ObjectOutputStream outStream;
     private File _selectedFile;
+    private String _sessionKey;
     @FXML
     private TextArea conversation;
     @FXML
@@ -36,6 +36,13 @@ public class MainWindowController implements Initializable {
     private ComboBox<String> codingAlgorithmComboBox = new ComboBox<>();
     @FXML
     private Label sendFileLabel;
+    @FXML
+    private Button chooseFileButton = new Button();
+    @FXML
+    private Button sendFileButton = new Button();
+    @FXML
+    private Button sendMessageButton = new Button();
+    //private final List<Button> _requireValidSessionKeyButtons = ;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -46,6 +53,8 @@ public class MainWindowController implements Initializable {
         });
 
         sendFileLabel.setText("");
+
+        disableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
     }
 
     public void setOutStream(ObjectOutputStream outStream) {
@@ -86,20 +95,31 @@ public class MainWindowController implements Initializable {
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidAlgorithmParameterException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String input = messageText.getText();
-        if(!input.isBlank()) {
-            conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
-            messageText.clear();
+        var input = messageText.getText();
 
+        if(!input.isBlank()) {
             var encrypted = encrypt(input);
             System.out.println(encrypted);
 
             outStream.writeObject(new Message(input));
+
+            conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
+            messageText.clear();
         }
     }
 
     public void onMessageReceived(String message){
         conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
+    }
+
+    @FXML
+    public void onGenerateSessionKeyClick() {
+        _sessionKey = UUID.randomUUID().toString();
+        enableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+
+
+
+        System.out.println(_sessionKey);
     }
 
     private void sendFile(String path) throws Exception{
@@ -122,15 +142,24 @@ public class MainWindowController implements Initializable {
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException {
+
         var ivSpec = AESUtil.generateIv();
-        String password = "123";
+        String password = _sessionKey;
         SecretKey key = AESUtil.getKeyFromPassword(password);
-        var algorithm = "AES/"+ codingAlgorithmComboBox.getValue() +"/PKCS5Padding";
 
-        String encrypted = Objects.equals(codingAlgorithmComboBox.getValue(), "ECB")
-                ? AESUtil.encrypt(algorithm, input, key)
-                : AESUtil.encrypt(algorithm, input, key, ivSpec);
+        var algorithm = codingAlgorithmComboBox.getValue();
+        var algorithmKey = "AES/"+ algorithm +"/PKCS5Padding";
 
-        return encrypted;
+        return Objects.equals(algorithm, "ECB")
+                ? AESUtil.encrypt(algorithmKey, input, key)
+                : AESUtil.encrypt(algorithmKey, input, key, ivSpec);
+    }
+
+    private void disableButtons(List<Button> buttons){
+        buttons.forEach(b -> b.setDisable(true));
+    }
+
+    private void enableButtons(List<Button> buttons){
+        buttons.forEach(b -> b.setDisable(false));
     }
 }
