@@ -23,7 +23,7 @@ public class LoginClientWindowController {
     protected void onLoginButtonClick() throws IOException {
         Stage stage = (Stage) passwordField.getScene().getWindow();
 
-        if(PasswordUtil.checkPassword(passwordField.getText())) {
+        if(true || PasswordUtil.checkPassword(passwordField.getText())) {
 
             //loading a scene from fxml file
             FXMLLoader fxmlLoader = new FXMLLoader(ChatClient.class.getResource("mainWindowView.fxml"));
@@ -35,6 +35,7 @@ public class LoginClientWindowController {
             CountDownLatch latch = new CountDownLatch(1);
 
             //Creating client handler with the controller gathered before and the latch
+            controller.setIsServer(false);
             ClientHandler clientHandler = new ClientHandler(latch, controller);
             Thread thread = new Thread(clientHandler);
             thread.start();

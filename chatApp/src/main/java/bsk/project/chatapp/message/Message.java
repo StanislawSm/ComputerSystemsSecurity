@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class Message implements Serializable{
     private final MessageType messageType;
     private String _cipherMode;
-
     private String text = null;
 
     public Message(String text) {

@@ -11,8 +11,8 @@ import java.util.concurrent.CountDownLatch;
 public class ClientHandler implements Runnable{
 
     private ObjectOutputStream outStream;
-    private MainWindowController mainWindowController;
-    private CountDownLatch latch;
+    private final MainWindowController mainWindowController;
+    private final CountDownLatch latch;
     public ClientHandler(CountDownLatch latch, MainWindowController mainWindowController) {
         this.mainWindowController = mainWindowController;
         this.latch = latch;
