@@ -53,7 +53,7 @@
       </VBox>
       <VBox fx:id="messageContainer" alignment="TOP_CENTER" style="-fx-padding: 0 10px 0 0;">
         <Label text="conversation" />
-        <TextArea fx:id="conversation" />
+        <TextArea fx:id="conversation" editable="false" />
       </VBox>
     </HBox>
   </center>

@@ -24,9 +24,9 @@ public class AESUtil {
         return keyGenerator.generateKey();
     }
 
-    public static SecretKey getKeyFromPassword(String password, String salt)
+    public static SecretKey getKeyFromPassword(String password)
             throws NoSuchAlgorithmException, InvalidKeySpecException {
-
+        String salt = "salt";
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), 65536, 256);
 
@@ -51,6 +51,17 @@ public class AESUtil {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
+    public static String encrypt(String algorithm, String input, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException,
+            InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] cipherText = cipher.doFinal(input.getBytes());
+
+        return Base64.getEncoder().encodeToString(cipherText);
+    }
+
     public static String decrypt(String algorithm, String cipherText, SecretKey key, IvParameterSpec iv)
             throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException,
@@ -58,6 +69,17 @@ public class AESUtil {
 
         Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(Cipher.DECRYPT_MODE, key, iv);
+        byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
+
+        return new String(plainText);
+    }
+
+    public static String decrypt(String algorithm, String cipherText, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException,
+            BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
+
+        Cipher cipher = Cipher.getInstance(algorithm);
+        cipher.init(Cipher.DECRYPT_MODE, key);
         byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
 
         return new String(plainText);

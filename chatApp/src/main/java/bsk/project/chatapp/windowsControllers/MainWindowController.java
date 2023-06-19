@@ -1,5 +1,6 @@
 package bsk.project.chatapp.windowsControllers;
 
+import bsk.project.chatapp.encryption.AESUtil;
 import bsk.project.chatapp.message.Message;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -11,8 +12,17 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class MainWindowController implements Initializable {
@@ -72,19 +82,24 @@ public class MainWindowController implements Initializable {
     }
 
     @FXML
-    protected void onSendMessageButtonClick() throws IOException {
+    protected void onSendMessageButtonClick()
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException,
+            InvalidAlgorithmParameterException, NoSuchPaddingException,
+            IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         String input = messageText.getText();
         if(!input.isBlank()) {
             conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
-            //conversation.appendText("Me: " + input + "\n");
             messageText.clear();
+
+            var encrypted = encrypt(input);
+            System.out.println(encrypted);
+
             outStream.writeObject(new Message(input));
         }
     }
 
     public void onMessageReceived(String message){
         conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
-        //conversation.appendText("Him: " + message + "\n");
     }
 
     private void sendFile(String path) throws Exception{
@@ -103,4 +118,19 @@ public class MainWindowController implements Initializable {
         fileInputStream.close();
     }
 
+    private String encrypt(String input)
+            throws NoSuchAlgorithmException, InvalidKeySpecException,
+            NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException {
+        var ivSpec = AESUtil.generateIv();
+        String password = "123";
+        SecretKey key = AESUtil.getKeyFromPassword(password);
+        var algorithm = "AES/"+ codingAlgorithmComboBox.getValue() +"/PKCS5Padding";
+
+        String encrypted = Objects.equals(codingAlgorithmComboBox.getValue(), "ECB")
+                ? AESUtil.encrypt(algorithm, input, key)
+                : AESUtil.encrypt(algorithm, input, key, ivSpec);
+
+        return encrypted;
+    }
 }
