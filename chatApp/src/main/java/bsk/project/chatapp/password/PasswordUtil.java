@@ -17,8 +17,8 @@ public class PasswordUtil {
     }
 
     public static String getPassword() {
-        // File file = new File("./keys/password/password.txt");
-        File file = new File("chatapp/keys/password/password.txt");
+        File file = new File("./keys/password/password.txt");
+        //File file = new File("chatapp/keys/password/password.txt");
         try {
             Scanner myReader = new Scanner(file);
             String line = myReader.nextLine();

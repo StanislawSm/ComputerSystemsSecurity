@@ -9,13 +9,9 @@ import bsk.project.chatapp.password.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -50,6 +46,9 @@ public class MainWindowController implements Initializable {
     private Button sendFileButton = new Button();
     @FXML
     private Button sendMessageButton = new Button();
+    @FXML
+    private ProgressBar progressBar = new ProgressBar();
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -198,11 +197,15 @@ public class MainWindowController implements Initializable {
 
         // send file size
         outStream.writeLong(file.length());
+        long fileSize = file.length();
+        long sentChunks = 0;
         // break file into chunks
         byte[] buffer = new byte[4 * 1024];
         while ((bytes = fileInputStream.read(buffer)) != -1) {
             outStream.write(buffer, 0, bytes);
             outStream.flush();
+            sentChunks++;
+            progressBar.setProgress((double)sentChunks/fileSize);
         }
         fileInputStream.close();
     }
@@ -218,7 +221,7 @@ public class MainWindowController implements Initializable {
 
     private String decrypt(Message message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         SecretKey key = AESUtil.getKeyFromPassword(_sessionKey);
-        var cypherMode = message.getCypherMode();
+        var cypherMode = message.getCypherMode(); // TOOD MS wziąć cypherMode z tego co przyśle serwer
         var algorithm = "AES/" + cypherMode + "/PKCS5Padding";
 
         return Objects.equals(cypherMode, "ECB")
@@ -268,5 +271,8 @@ public class MainWindowController implements Initializable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    public void setProgressBarProgress(double progress){
+        progressBar.setProgress(progress);
     }
 }
