@@ -1,11 +1,8 @@
 package bsk.project.chatapp.password;
 
-
-
 import bsk.project.chatapp.alertBox.AlertBox;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class PasswordUtil {

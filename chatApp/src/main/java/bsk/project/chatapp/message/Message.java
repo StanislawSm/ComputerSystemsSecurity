@@ -3,9 +3,6 @@ package bsk.project.chatapp.message;
 import java.io.Serializable;
 
 public class Message implements Serializable{
-
-
-
     private MessageType messageType;
 
     private String text = null;
@@ -19,7 +16,6 @@ public class Message implements Serializable{
         this.messageType = messageType;
         this.text = text;
     }
-
 
     public String getText() {
         return text;

@@ -7,10 +7,10 @@ import bsk.project.chatapp.password.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -22,30 +22,54 @@ import java.io.*;
 import java.net.URL;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainWindowController implements Initializable {
     private ObjectOutputStream outStream;
     private File _selectedFile;
+    private String _sessionKey;
     @FXML
     private TextArea conversation;
     @FXML
-    private TextArea messageText;
+    private TextArea messageTextArea = new TextArea();
     @FXML
     private ComboBox<String> codingAlgorithmComboBox = new ComboBox<>();
     @FXML
-    private Label sendFileLabel;
+    private Label sendFileLabel = new Label("");
+    @FXML
+    private Button chooseFileButton = new Button();
+    @FXML
+    private Button sendFileButton = new Button();
+    @FXML
+    private Button sendMessageButton = new Button();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         codingAlgorithmComboBox.setItems(FXCollections.observableArrayList("ECB", "CBC"));
         codingAlgorithmComboBox.setOnAction((event) -> {
-            // TODO MS wybrana wartość powinna być wysłana do drugiego użytkownika
-            System.out.println(codingAlgorithmComboBox.getValue());
+            // Sending messages and files should be disabled until session key is generated and encryption algorithm chosen
+            enableUiComponents();
         });
 
-        sendFileLabel.setText("");
+        // Sending messages and files should be disabled until session key is generated and encryption algorithm chosen
+        disableUiComponents();
+    }
+
+    /**
+     * Method disable some buttons and textFields
+     */
+    public void disableUiComponents() {
+        codingAlgorithmComboBox.setDisable(true);
+        messageTextArea.setDisable(true);
+        disableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+    }
+
+    /**
+     * Method enable some buttons and textFields
+     */
+    public void enableUiComponents() {
+        enableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+        messageTextArea.setDisable(false);
     }
 
     public void setOutStream(ObjectOutputStream outStream) {
@@ -59,7 +83,7 @@ public class MainWindowController implements Initializable {
         file.setTitle("Choose File");
         _selectedFile = file.showOpenDialog(stage);
 
-        if(_selectedFile != null){
+        if (_selectedFile != null) {
             sendFileLabel.setText(_selectedFile.getName());
         }
     }
@@ -70,7 +94,7 @@ public class MainWindowController implements Initializable {
 //        FileChooser file = new FileChooser();
 //        file.setTitle("Choose File");
 //        File loadedFilePath = file.showOpenDialog(stage);
-        if(_selectedFile == null){
+        if (_selectedFile == null) {
             System.out.println("Choose file to send!");
             return;
         }
@@ -86,23 +110,55 @@ public class MainWindowController implements Initializable {
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidAlgorithmParameterException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String input = messageText.getText();
-        if(!input.isBlank()) {
-            conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
-            messageText.clear();
 
-            var encrypted = encrypt(input);
-            System.out.println(encrypted);
+        var userText = messageTextArea.getText().trim();
 
-            outStream.writeObject(new Message(input));
+        if (!userText.isBlank()) {
+            var encryptedText = encrypt(userText);
+            System.out.println("Encrypted text: " + encryptedText);
+
+            outStream.writeObject(new Message(userText));
+
+            conversation.setText(conversation.getText().concat("Me: ").concat(userText).concat("\n"));
+            messageTextArea.clear();
         }
     }
 
-    public void onMessageReceived(String message){
+    public void onMessageReceived(String message) {
         conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
     }
 
-    private void sendFile(String path) throws Exception{
+    @FXML
+    public void onGenerateSessionKeyClick()
+            throws IOException {
+
+        _sessionKey = UUID.randomUUID().toString();
+        System.out.println("Generated new session key: " + _sessionKey);
+        codingAlgorithmComboBox.setDisable(false);
+
+        // TODO MS get OTHER USER public RSA key here
+        // PublicKey publicKey;
+        // var encrypted = RSAUtil.encryptSessionKeyWithRSA(_sessionKey, publicKey);
+        // outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encrypted));
+        // System.out.println("Encrypted new session key: " + encrypted);
+    }
+
+    public void onEncryptedSessionKeyReceived(Message message) {
+        var encryptedSessionKey = message.getText();
+        System.out.println("Received encrypted session key: " + encryptedSessionKey);
+
+        // TODO MS get MY private RSA key here
+//                            PrivateKey privateKey;
+//                            var decryptedSessionKey = RSAUtil.decryptSessionKeyWithRSA(encryptedSessionKey.getBytes(), privateKey);
+//                            mainWindowController.setSessionKey(decryptedSessionKey);
+    }
+
+    private void setSessionKey(String sessionKey) {
+        _sessionKey = sessionKey;
+        System.out.println("New session key: " + _sessionKey);
+    }
+
+    private void sendFile(String path) throws Exception {
         int bytes = 0;
         File file = new File(path);
         FileInputStream fileInputStream = new FileInputStream(file);
@@ -110,9 +166,9 @@ public class MainWindowController implements Initializable {
         // send file size
         outStream.writeLong(file.length());
         // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            outStream.write(buffer,0,bytes);
+        byte[] buffer = new byte[4 * 1024];
+        while ((bytes = fileInputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytes);
             outStream.flush();
         }
         fileInputStream.close();
@@ -122,18 +178,28 @@ public class MainWindowController implements Initializable {
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidAlgorithmParameterException {
+
         var ivSpec = AESUtil.generateIv();
-        String password = "123";
+        String password = _sessionKey;
         SecretKey key = AESUtil.getKeyFromPassword(password);
-        var algorithm = "AES/"+ codingAlgorithmComboBox.getValue() +"/PKCS5Padding";
 
-        String encrypted = Objects.equals(codingAlgorithmComboBox.getValue(), "ECB")
-                ? AESUtil.encrypt(algorithm, input, key)
-                : AESUtil.encrypt(algorithm, input, key, ivSpec);
+        var algorithm = codingAlgorithmComboBox.getValue();
+        var algorithmKey = "AES/" + algorithm + "/PKCS5Padding";
 
-        return encrypted;
+        return Objects.equals(algorithm, "ECB")
+                ? AESUtil.encrypt(algorithmKey, input, key)
+                : AESUtil.encrypt(algorithmKey, input, key, ivSpec);
     }
 
+    private void disableButtons(List<Button> buttons) {
+        buttons.forEach(b -> b.setDisable(true));
+    }
+
+    private void enableButtons(List<Button> buttons) {
+        buttons.forEach(b -> b.setDisable(false));
+    }
+
+    // TODO MS obgadać ze Stachem
     public void onGenerateSessionKeyButtonClick(){
         //generate session key
         //get keys from storage
