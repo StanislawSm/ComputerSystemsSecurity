@@ -132,6 +132,8 @@ public class MainWindowController implements Initializable {
     public void onGenerateSessionKeyClick()
             throws IOException {
 
+        onGenerateSessionKeyButtonClick(); // TODO MS
+
         _sessionKey = UUID.randomUUID().toString();
         System.out.println("Generated new session key: " + _sessionKey);
         codingAlgorithmComboBox.setDisable(false);
