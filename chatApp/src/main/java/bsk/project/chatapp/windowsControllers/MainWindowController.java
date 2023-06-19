@@ -210,7 +210,6 @@ public class MainWindowController implements Initializable {
                 ? AESUtil.encrypt(algorithmKey, input, key)
                 : AESUtil.encrypt(algorithmKey, input, key, ivSpec);
     }
-
     private String decrypt(Message message)
             throws NoSuchAlgorithmException, InvalidKeySpecException,
             NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
