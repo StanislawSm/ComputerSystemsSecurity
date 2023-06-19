@@ -29,7 +29,9 @@ public class PasswordUtil {
         File file = new File("./keys/password/password.txt");
         try {
             Scanner myReader  = new Scanner(file);
-            return myReader.nextLine();
+            String line = myReader.nextLine();
+            myReader.close();
+            return line;
         } catch (FileNotFoundException e){
             System.err.println(e.getMessage());
         }
