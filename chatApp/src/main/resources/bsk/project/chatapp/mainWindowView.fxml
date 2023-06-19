@@ -40,6 +40,7 @@
                   <Insets bottom="8.0" />
                </VBox.margin>
             </GridPane>
+          <Button fx:id="generateSessionKey" onAction="#onGenerateSessionKeyButtonClick" text="generate session key" />
             <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0">
                <VBox.margin>
                   <Insets bottom="32.0" />

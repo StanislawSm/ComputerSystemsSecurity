@@ -1,7 +1,10 @@
 package bsk.project.chatapp.keys;
 
 import bsk.project.chatapp.ChatServer;
+import bsk.project.chatapp.windowsControllers.MainWindowController;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -15,7 +18,8 @@ public class KeysUtil {
      @param ownerName must be client or server
      */
     public static KeyPair getKeyPairFromKeyStore(String fileName, String password, String ownerName) throws Exception {
-        InputStream ins = ChatServer.class.getResourceAsStream("./keys/" + fileName);
+        File initialFile = new File("./keys/" + fileName);
+        InputStream ins = new FileInputStream(initialFile);
 
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
         keyStore.load(ins, password.toCharArray());   //Keystore password
