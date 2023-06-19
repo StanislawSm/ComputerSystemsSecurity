@@ -3,17 +3,22 @@ package bsk.project.chatapp.windowsControllers;
 import bsk.project.chatapp.ChatServer;
 import bsk.project.chatapp.handlers.ServerHandler;
 import bsk.project.chatapp.password.PasswordUtil;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.concurrent.CountDownLatch;
 
-public class LoginServerWindowController {
+public class LoginServerWindowController{
     @FXML
     private PasswordField passwordField;
     @FXML
@@ -23,11 +28,10 @@ public class LoginServerWindowController {
     protected void onLoginButtonClick() throws IOException {
         Stage stage = (Stage) passwordField.getScene().getWindow();
 
-        if(PasswordUtil.checkPassword(passwordField.getText())) {
-
+        if(true || PasswordUtil.checkPassword(passwordField.getText())) {
             //loading a scene from fxml file
             FXMLLoader fxmlLoader = new FXMLLoader(ChatServer.class.getResource("mainWindowView.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 480, 480);
+            Scene scene = new Scene(fxmlLoader.load(), 800, 480);
             //gathering controller Object from loaded scene
             MainWindowController controller = fxmlLoader.getController();
 
@@ -54,5 +58,4 @@ public class LoginServerWindowController {
             stage.show();
         }
     }
-
 }

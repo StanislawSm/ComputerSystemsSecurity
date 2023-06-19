@@ -1,38 +1,78 @@
 package bsk.project.chatapp.windowsControllers;
 
 import bsk.project.chatapp.message.Message;
-import bsk.project.chatapp.message.MessageType;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class MainWindowController {
+public class MainWindowController implements Initializable {
+    private ObjectOutputStream outStream;
+    private File _selectedFile;
     @FXML
     private TextArea conversation;
     @FXML
     private TextArea messageText;
-    private ObjectOutputStream outStream;
+    @FXML
+    private ComboBox<String> codingAlgorithmComboBox = new ComboBox<>();
+    @FXML
+    private Label sendFileLabel;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        codingAlgorithmComboBox.setItems(FXCollections.observableArrayList("ECB", "CBC"));
+        codingAlgorithmComboBox.setOnAction((event) -> {
+            // TODO MS wybrana wartość powinna być wysłana do drugiego użytkownika
+            System.out.println(codingAlgorithmComboBox.getValue());
+        });
+
+        sendFileLabel.setText("");
+    }
 
     public void setOutStream(ObjectOutputStream outStream) {
         this.outStream = outStream;
     }
 
     @FXML
-    protected void onFileChooseClick() throws Exception {
+    protected void onChooseFileButtonClick() throws Exception {
         Stage stage = (Stage) conversation.getScene().getWindow();
         FileChooser file = new FileChooser();
-        file.setTitle("Open File");
-        File loadedFilePath = file.showOpenDialog(stage);
-        outStream.writeObject(new Message("file ready to be sent"));
-        outStream.writeObject(new Message(MessageType.FILE_READY, loadedFilePath.getName()));
-        sendFile(loadedFilePath.getPath());
+        file.setTitle("Choose File");
+        _selectedFile = file.showOpenDialog(stage);
+
+        if(_selectedFile != null){
+            sendFileLabel.setText(_selectedFile.getName());
+        }
     }
 
     @FXML
-    protected void onSendButtonClick() throws IOException {
+    protected void onSendFileButtonClick() throws Exception {
+//        Stage stage = (Stage) conversation.getScene().getWindow();
+//        FileChooser file = new FileChooser();
+//        file.setTitle("Choose File");
+//        File loadedFilePath = file.showOpenDialog(stage);
+        if(_selectedFile == null){
+            System.out.println("Choose file to send!");
+            return;
+        }
+
+        System.out.println(_selectedFile.getName());
+        // outStream.writeObject(new Message("file ready to be sent"));
+        // outStream.writeObject(new Message(MessageType.FILE_READY, loadedFilePath.getName()));
+        // sendFile(loadedFilePath.getPath());
+    }
+
+    @FXML
+    protected void onSendMessageButtonClick() throws IOException {
         String input = messageText.getText();
         if(!input.isBlank()) {
             conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
