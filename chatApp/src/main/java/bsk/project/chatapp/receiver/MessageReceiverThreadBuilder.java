@@ -30,7 +30,7 @@ public class MessageReceiverThreadBuilder implements Runnable {
                     switch (message.getMessageType()) {
                         case TEXT -> {
                             System.out.println("["+ receiverType + "]" + " Received text: " + message.getText());
-                            mainWindowController.onMessageReceived(message.getText());
+                            mainWindowController.onMessageReceived(message);
                         }
                         case FILE_READY -> {
                             System.out.println("["+ receiverType + "]" + " file ready");
@@ -53,11 +53,13 @@ public class MessageReceiverThreadBuilder implements Runnable {
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(fileName);
 
-        long size = in.readLong();     // read file size
+        long currentSize = in.readLong();     // read file size
+        long size = currentSize;
         byte[] buffer = new byte[4 * 1024];
-        while (size > 0 && (bytes = in.read(buffer, 0, (int) Math.min(buffer.length, size))) != -1) {
+        while (currentSize > 0 && (bytes = in.read(buffer, 0, (int) Math.min(buffer.length, currentSize))) != -1) {
             fileOutputStream.write(buffer, 0, bytes);
-            size -= bytes;      // read up to file size
+            currentSize -= bytes;      // read up to file size
+            mainWindowController.setProgressBarProgress((double)currentSize/size);
         }
         fileOutputStream.close();
     }

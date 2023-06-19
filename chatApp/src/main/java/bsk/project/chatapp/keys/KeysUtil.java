@@ -19,6 +19,7 @@ public class KeysUtil {
      */
     public static KeyPair getKeyPairFromKeyStore(String fileName, String password, String ownerName) throws Exception {
         File initialFile = new File("./keys/" + fileName);
+        //File initialFile = new File("chatapp/keys/" + fileName);
         InputStream ins = new FileInputStream(initialFile);
 
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
@@ -32,6 +33,7 @@ public class KeysUtil {
         PublicKey publicKey = cert.getPublicKey();
         PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
+        ins.close();
         return new KeyPair(publicKey, privateKey);
     }
 }
