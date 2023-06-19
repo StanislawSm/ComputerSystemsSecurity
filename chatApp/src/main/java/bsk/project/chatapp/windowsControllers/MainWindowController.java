@@ -19,9 +19,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.URL;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -133,10 +131,5 @@ public class MainWindowController implements Initializable {
                 : AESUtil.encrypt(algorithm, input, key, ivSpec);
 
         return encrypted;
-    }
-
-    public void onGenerateKeysButtonClick(){
-        String passwordFromFile = PasswordUtil.getPassword();
-        
     }
 }
