@@ -51,7 +51,7 @@
                         <Insets bottom="8.0"/>
                     </VBox.margin>
                 </GridPane>
-                <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0">
+                <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0" fx:id="progressBar">
                     <VBox.margin>
                         <Insets bottom="32.0"/>
                     </VBox.margin>

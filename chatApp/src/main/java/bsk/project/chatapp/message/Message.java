@@ -19,6 +19,11 @@ public class Message implements Serializable{
         _cipherMode = cipherMode;
     }
 
+    public Message(MessageType messageType, String text) {
+        this.messageType = messageType;
+        this.text = text;
+    }
+
     public Message(MessageType messageType, String text, String cipherMode) {
         this.messageType = messageType;
         this.text = text;
