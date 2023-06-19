@@ -2,6 +2,7 @@ package bsk.project.chatapp.windowsControllers;
 
 import bsk.project.chatapp.encryption.AESUtil;
 import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.password.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -132,5 +133,10 @@ public class MainWindowController implements Initializable {
                 : AESUtil.encrypt(algorithm, input, key, ivSpec);
 
         return encrypted;
+    }
+
+    public void onGenerateKeysButtonClick(){
+        String passwordFromFile = PasswordUtil.getPassword();
+        
     }
 }

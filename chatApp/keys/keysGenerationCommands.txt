@@ -1,0 +1,3 @@
+C:\Program Files (x86)\Java\jre1.8.0_361\bin>.\keytool -genkeypair -alias client -storepass 123456 -keypass 123456 -keyalg RSA -keystore C:\Users\User\Documents\sem6\BSK\projekt\ComputerSystemsSecurity\chatApp\keys\keystoreClient.jks
+
+C:\Program Files (x86)\Java\jre1.8.0_361\bin>.\keytool -genkeypair -alias server -storepass 123456 -keypass 123456 -keyalg RSA -keystore C:\Users\User\Documents\sem6\BSK\projekt\ComputerSystemsSecurity\chatApp\keys\keystoreServer.jks

@@ -27,4 +27,15 @@ public class PasswordUtil {
         }
         return result;
     }
+
+    public static String getPassword() {
+        File file = new File("./keys/password/password.txt");
+        try {
+            Scanner myReader  = new Scanner(file);
+            return myReader.nextLine();
+        } catch (FileNotFoundException e){
+            System.err.println(e.getMessage());
+        }
+        return null;
+    }
 }
