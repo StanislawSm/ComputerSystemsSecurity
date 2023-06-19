@@ -4,67 +4,77 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="mainController" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bsk.project.chatapp.windowsControllers.MainWindowController">
-  <center>
-    <HBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml">
-      <VBox alignment="TOP_CENTER" style="-fx-padding: 0 0 0 10px;">
-        <Label fx:id="welcomeText" />
-        <ComboBox fx:id="codingAlgorithmComboBox" promptText="Choose coding algorithm">
-               <VBox.margin>
-                  <Insets bottom="32.0" />
-               </VBox.margin></ComboBox>
-            <GridPane>
-              <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="76.0" minWidth="76.0" prefWidth="76.0" />
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="280.0000114440918" minWidth="10.0" prefWidth="273.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-               <children>
-              <Button fx:id="chooseFileButton" minWidth="62.0" onAction="#onChooseFileButtonClick" text="Choose file" />
-                  <Label fx:id="sendFileLabel" text="Label" GridPane.columnIndex="1">
-                     <GridPane.margin>
-                        <Insets left="4.0" right="32.0" />
-                     </GridPane.margin></Label>
-                  <Button fx:id="sendFileButton" mnemonicParsing="false" onAction="#onSendFileButtonClick" text="Send file" GridPane.columnIndex="2" />
-               </children>
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-               <VBox.margin>
-                  <Insets bottom="8.0" />
-               </VBox.margin>
-            </GridPane>
-            <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0">
-               <VBox.margin>
-                  <Insets bottom="32.0" />
-               </VBox.margin></ProgressBar>
-        <Label text="enter a message" />
-        <TextArea fx:id="messageText" maxHeight="100">
-               <VBox.margin>
-                  <Insets bottom="4.0" />
-               </VBox.margin></TextArea>
-        <Button fx:id="sendMessageButton" onAction="#onSendMessageButtonClick" text="Send message" />
-      </VBox>
-      <VBox fx:id="messageContainer" alignment="TOP_CENTER" style="-fx-padding: 0 10px 0 0;">
-        <Label text="conversation" />
-        <TextArea fx:id="conversation" editable="false" />
-      </VBox>
-    </HBox>
-  </center>
+<BorderPane fx:id="mainController" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="bsk.project.chatapp.windowsControllers.MainWindowController">
+    <top>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <children>
+                <Button fx:id="generateSessionKeyButton" mnemonicParsing="false" onAction="#onGenerateSessionKeyClick"
+                        text="Generate Session Key"/>
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <HBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml">
+            <VBox alignment="TOP_CENTER" style="-fx-padding: 0 0 0 10px;">
+                <Label fx:id="welcomeText"/>
+                <ComboBox fx:id="codingAlgorithmComboBox" promptText="Choose coding algorithm">
+                    <VBox.margin>
+                        <Insets bottom="32.0"/>
+                    </VBox.margin>
+                </ComboBox>
+                <GridPane>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="76.0" minWidth="76.0" prefWidth="76.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="280.0000114440918" minWidth="10.0"
+                                           prefWidth="273.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <children>
+                        <Button fx:id="chooseFileButton" minWidth="62.0" onAction="#onChooseFileButtonClick"
+                                text="Choose file"/>
+                        <Label fx:id="sendFileLabel" text="Label" GridPane.columnIndex="1">
+                            <GridPane.margin>
+                                <Insets left="4.0" right="32.0"/>
+                            </GridPane.margin>
+                        </Label>
+                        <Button fx:id="sendFileButton" mnemonicParsing="false" onAction="#onSendFileButtonClick"
+                                text="Send file" GridPane.columnIndex="2"/>
+                    </children>
+                    <opaqueInsets>
+                        <Insets/>
+                    </opaqueInsets>
+                    <VBox.margin>
+                        <Insets bottom="8.0"/>
+                    </VBox.margin>
+                </GridPane>
+                <ProgressBar maxWidth="1.7976931348623157E308" progress="0.0">
+                    <VBox.margin>
+                        <Insets bottom="32.0"/>
+                    </VBox.margin>
+                </ProgressBar>
+                <Label text="enter a message"/>
+                <TextArea fx:id="messageText" maxHeight="100">
+                    <VBox.margin>
+                        <Insets bottom="4.0"/>
+                    </VBox.margin>
+                </TextArea>
+                <Button fx:id="sendMessageButton" onAction="#onSendMessageButtonClick" text="Send message"/>
+            </VBox>
+            <VBox fx:id="messageContainer" alignment="TOP_CENTER" style="-fx-padding: 0 10px 0 0;">
+                <Label text="conversation"/>
+                <TextArea fx:id="conversation" editable="false"/>
+            </VBox>
+        </HBox>
+    </center>
 
-  <bottom>
-    <HBox alignment="CENTER">
-      <Label text="© 2023 chatApp" />
-    </HBox>
-  </bottom>
-   <top>
-      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <Button fx:id="generateSessionKeyButton" mnemonicParsing="false" onAction="#onGenerateSessionKeyClick" text="Generate Session Key" />
-         </children>
-      </HBox>
-   </top>
+    <bottom>
+        <HBox alignment="CENTER">
+            <Label text="© 2023 chatApp"/>
+        </HBox>
+    </bottom>
+
 </BorderPane>
