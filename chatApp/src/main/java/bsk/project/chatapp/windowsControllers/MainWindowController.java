@@ -53,6 +53,7 @@ public class MainWindowController implements Initializable {
         });
 
         sendFileLabel.setText("");
+        messageText.setDisable(true);
 
         disableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
     }
@@ -68,7 +69,7 @@ public class MainWindowController implements Initializable {
         file.setTitle("Choose File");
         _selectedFile = file.showOpenDialog(stage);
 
-        if(_selectedFile != null){
+        if (_selectedFile != null) {
             sendFileLabel.setText(_selectedFile.getName());
         }
     }
@@ -79,7 +80,7 @@ public class MainWindowController implements Initializable {
 //        FileChooser file = new FileChooser();
 //        file.setTitle("Choose File");
 //        File loadedFilePath = file.showOpenDialog(stage);
-        if(_selectedFile == null){
+        if (_selectedFile == null) {
             System.out.println("Choose file to send!");
             return;
         }
@@ -97,7 +98,7 @@ public class MainWindowController implements Initializable {
             IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         var input = messageText.getText();
 
-        if(!input.isBlank()) {
+        if (!input.isBlank()) {
             var encrypted = encrypt(input);
             System.out.println(encrypted);
 
@@ -108,21 +109,28 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    public void onMessageReceived(String message){
+    public void onMessageReceived(String message) {
         conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
     }
 
     @FXML
     public void onGenerateSessionKeyClick() {
         _sessionKey = UUID.randomUUID().toString();
+
         enableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+        messageText.setDisable(false);
 
-
+        // TODO MS wysłać ramkę do drugiego użytkownika
+        // zaszyfrować klucz sesji przy pomocy publicznego klucza RSA tego drugiedo użytkownika
 
         System.out.println(_sessionKey);
     }
 
-    private void sendFile(String path) throws Exception{
+    public void setSessionKey(String sessionKey) {
+        _sessionKey = sessionKey;
+    }
+
+    private void sendFile(String path) throws Exception {
         int bytes = 0;
         File file = new File(path);
         FileInputStream fileInputStream = new FileInputStream(file);
@@ -130,9 +138,9 @@ public class MainWindowController implements Initializable {
         // send file size
         outStream.writeLong(file.length());
         // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            outStream.write(buffer,0,bytes);
+        byte[] buffer = new byte[4 * 1024];
+        while ((bytes = fileInputStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytes);
             outStream.flush();
         }
         fileInputStream.close();
@@ -148,18 +156,18 @@ public class MainWindowController implements Initializable {
         SecretKey key = AESUtil.getKeyFromPassword(password);
 
         var algorithm = codingAlgorithmComboBox.getValue();
-        var algorithmKey = "AES/"+ algorithm +"/PKCS5Padding";
+        var algorithmKey = "AES/" + algorithm + "/PKCS5Padding";
 
         return Objects.equals(algorithm, "ECB")
                 ? AESUtil.encrypt(algorithmKey, input, key)
                 : AESUtil.encrypt(algorithmKey, input, key, ivSpec);
     }
 
-    private void disableButtons(List<Button> buttons){
+    private void disableButtons(List<Button> buttons) {
         buttons.forEach(b -> b.setDisable(true));
     }
 
-    private void enableButtons(List<Button> buttons){
+    private void enableButtons(List<Button> buttons) {
         buttons.forEach(b -> b.setDisable(false));
     }
 }

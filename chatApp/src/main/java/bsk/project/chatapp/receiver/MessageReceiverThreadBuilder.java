@@ -27,7 +27,6 @@ public class MessageReceiverThreadBuilder implements Runnable{
                 if (message != null) {
                     switch (message.getMessageType()){
                         case TEXT:
-
                             System.out.println(receiverType + ": " + message);
                             mainWindowController.onMessageReceived(message.getText());
                             break;
@@ -35,15 +34,18 @@ public class MessageReceiverThreadBuilder implements Runnable{
                             System.out.println(receiverType + ": file ready");
                             receiveFile("./" + message.getText());
                             break;
+                        case ENCRYPTED_SECRET:
+                            System.out.println("Received encrypted secret: " + message.getText());
+                            var encryptedSessionKey = message.getText();
+                            // var decryptedSessionKey =
+                            // mainWindowController.setSessionKey(decryptedSessionKey);
+                            break;
                         default:
                             break;
                     }
-
                 }
             } catch (IOException e) {
                 System.out.println("Error while receiving messages from the "+ receiverType + ": " + e.getMessage());
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
