@@ -1,7 +1,9 @@
 package bsk.project.chatapp.windowsControllers;
 
 import bsk.project.chatapp.encryption.AESUtil;
+import bsk.project.chatapp.keys.KeysUtil;
 import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.password.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,9 +20,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.URL;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -132,5 +132,18 @@ public class MainWindowController implements Initializable {
                 : AESUtil.encrypt(algorithm, input, key, ivSpec);
 
         return encrypted;
+    }
+
+    public void onGenerateSessionKeyButtonClick(){
+        //generate session key
+        //get keys from storage
+        KeyPair clientKeyPair;
+        try {
+            clientKeyPair = KeysUtil.getKeyPairFromKeyStore("clientKeys/keystoreClient.jks", Objects.requireNonNull(PasswordUtil.getPassword()), "client");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(clientKeyPair.toString());
+        //cipher session key with public key
     }
 }
