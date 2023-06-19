@@ -59,7 +59,7 @@ public class MainWindowController implements Initializable {
             _cipherMode = codingAlgorithmComboBox.getValue();
             _ivSpec = AESUtil.generateIv();
             try {
-                sendCypherModeAndIvSpecToClient();
+                sendCypherModeToClient();
             } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | IOException e) {
                 throw new RuntimeException(e);
             }
@@ -126,9 +126,9 @@ public class MainWindowController implements Initializable {
 
         if (!userText.isBlank()) {
             var encryptedText = encrypt(userText);
-            System.out.println("Encrypted text: " + encryptedText);
+            System.out.println("[INFO] Send encrypted text: " + encryptedText);
 
-            outStream.writeObject(new Message(encryptedText, _cipherMode));
+            outStream.writeObject(new Message(encryptedText));
 
             conversation.setText(conversation.getText().concat("Me: ").concat(userText).concat("\n"));
             messageTextArea.clear();
@@ -136,6 +136,7 @@ public class MainWindowController implements Initializable {
     }
 
     public void onMessageReceived(Message message) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        System.out.println("[INFO] Received encrypted text: " + message.getText());
         var decryptedText = decrypt(message);
         conversation.setText(conversation.getText().concat("Him: ").concat(decryptedText).concat("\n"));
     }
@@ -149,7 +150,17 @@ public class MainWindowController implements Initializable {
 
     public void onEncryptedSessionKeyReceived(Message message) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         setSessionKey(decryptSessionKey(message.getText()));
-        codingAlgorithmComboBox.setDisable(false);
+        if(_isServer) {
+            codingAlgorithmComboBox.setDisable(false);
+        }
+    }
+
+    public void onCipherModeChange(Message message) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        _cipherMode = message.getCypherMode();
+        System.out.println("[INFO] Received cypher mode and encrypted ivSpec from server: " + _cipherMode + "/" + message.getText());
+        var encryptedIvSpec = Base64.getDecoder().decode(message.getText());
+        _ivSpec = new IvParameterSpec(RSAUtil.decryptWithRSAWithoutConversion(encryptedIvSpec, getClientPrivateKey()));
+        enableUiComponents();
     }
 
     public void setIsServer(boolean isServer) {
@@ -159,17 +170,17 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    private void sendCypherModeAndIvSpecToClient() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
-// TODO MS
-        //        var encryptedIvSpec = encryptWithRSA(_ivSpec.toString());
-//        System.out.println("Encrypted cypher mode and ivSpec send to client: " + _cipherMode);
-//        outStream.writeObject(new Message(MessageType.CYPHER_MODE_CHANGED, encryptedIvSpec, _cipherMode));
+    private void sendCypherModeToClient() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
+        var publicKey = getClientPublicKey();
+        var encryptedIvSpec = RSAUtil.encryptWithRSA(_ivSpec.getIV(), publicKey);
+        System.out.println("[INFO] Cypher mode and encrypted ivSpec send to client: " + _cipherMode + "/" + encryptedIvSpec);
+        outStream.writeObject(new Message(MessageType.CYPHER_MODE_CHANGED, encryptedIvSpec, _cipherMode));
     }
 
     private void sendSessionKeyToClient() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, IOException {
         var encryptedKey = encryptWithRSA(_sessionKey);
-        System.out.println("Encrypted session key send to client: " + encryptedKey);
-        outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encryptedKey, "none"));
+        System.out.println("[INFO] Encrypted session key send to client: " + encryptedKey);
+        outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encryptedKey));
     }
 
     private String encryptWithRSA(String value) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
@@ -180,14 +191,14 @@ public class MainWindowController implements Initializable {
     private String decryptSessionKey(String encryptedSessionKey) throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         PrivateKey privateKey = _isServer ? getServerPrivateKey() : getClientPrivateKey();
         var encryptedSessionKeyBytes = Base64.getDecoder().decode(encryptedSessionKey);
-        System.out.println("Received encrypted session key: " + encryptedSessionKey);
+        System.out.println("[INFO] Received encrypted session key: " + encryptedSessionKey);
 
         return RSAUtil.decryptWithRSA(encryptedSessionKeyBytes, privateKey);
     }
 
     private void setSessionKey(String sessionKey) {
         _sessionKey = sessionKey;
-        System.out.println("New session key: " + _sessionKey);
+        System.out.println("[INFO] New session key: " + _sessionKey);
     }
 
     private void sendFile(String path) throws Exception {
@@ -221,10 +232,9 @@ public class MainWindowController implements Initializable {
 
     private String decrypt(Message message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         SecretKey key = AESUtil.getKeyFromPassword(_sessionKey);
-        var cypherMode = message.getCypherMode(); // TOOD MS wziąć cypherMode z tego co przyśle serwer
-        var algorithm = "AES/" + cypherMode + "/PKCS5Padding";
+        var algorithm = "AES/" + _cipherMode + "/PKCS5Padding";
 
-        return Objects.equals(cypherMode, "ECB")
+        return Objects.equals(_cipherMode, "ECB")
                 ? AESUtil.decrypt(algorithm, message.getText(), key)
                 : AESUtil.decrypt(algorithm, message.getText(), key, _ivSpec);
     }

@@ -20,12 +20,26 @@ public class RSAUtil {
 
         return Base64.getEncoder().encodeToString(encryptedSessionKeyBytes);
     }
+    public static String encryptWithRSA(byte[] bytes, PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher encryptCipher = Cipher.getInstance("RSA");
+        encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encryptedSessionKeyBytes = encryptCipher.doFinal(bytes);
+
+        return Base64.getEncoder().encodeToString(encryptedSessionKeyBytes);
+    }
 
     public static String decryptWithRSA(byte[] bytes, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Cipher encryptCipher = Cipher.getInstance("RSA");
         encryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] sessionKeyBytes = encryptCipher.doFinal(bytes);
+        byte[] encryptedBytes = encryptCipher.doFinal(bytes);
 
-        return new String(sessionKeyBytes, StandardCharsets.UTF_8);
+        return new String(encryptedBytes, StandardCharsets.UTF_8);
+    }
+
+    public static byte[] decryptWithRSAWithoutConversion(byte[] bytes, PrivateKey privateKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Cipher encryptCipher = Cipher.getInstance("RSA");
+        encryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+        return encryptCipher.doFinal(bytes);
     }
 }

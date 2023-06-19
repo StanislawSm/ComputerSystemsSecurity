@@ -28,15 +28,10 @@ public class MessageReceiverThreadBuilder implements Runnable {
                 Message message = (Message) in.readObject();
                 if (message != null) {
                     switch (message.getMessageType()) {
-                        case TEXT -> {
-                            System.out.println("["+ receiverType + "]" + " Received text: " + message.getText());
-                            mainWindowController.onMessageReceived(message);
-                        }
-                        case FILE_READY -> {
-                            System.out.println("["+ receiverType + "]" + " file ready");
-                            receiveFile("./" + message.getText());
-                        }
+                        case TEXT -> mainWindowController.onMessageReceived(message);
+                        case FILE_READY -> receiveFile("./" + message.getText());
                         case ENCRYPTED_SECRET -> mainWindowController.onEncryptedSessionKeyReceived(message);
+                        case CYPHER_MODE_CHANGED -> mainWindowController.onCipherModeChange(message);
                         default -> {
                         }
                     }
@@ -50,6 +45,7 @@ public class MessageReceiverThreadBuilder implements Runnable {
     }
 
     private void receiveFile(String fileName) throws Exception {
+        System.out.println("File ready");
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(fileName);
 
