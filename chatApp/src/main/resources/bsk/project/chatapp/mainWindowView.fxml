@@ -36,7 +36,7 @@
                     <children>
                         <Button fx:id="chooseFileButton" minWidth="62.0" onAction="#onChooseFileButtonClick"
                                 text="Choose file"/>
-                        <Label fx:id="sendFileLabel" text="Label" GridPane.columnIndex="1">
+                        <Label fx:id="sendFileLabel" GridPane.columnIndex="1">
                             <GridPane.margin>
                                 <Insets left="4.0" right="32.0"/>
                             </GridPane.margin>
@@ -57,7 +57,7 @@
                     </VBox.margin>
                 </ProgressBar>
                 <Label text="enter a message"/>
-                <TextArea fx:id="messageText" maxHeight="100">
+                <TextArea fx:id="messageTextArea" maxHeight="100">
                     <VBox.margin>
                         <Insets bottom="4.0"/>
                     </VBox.margin>

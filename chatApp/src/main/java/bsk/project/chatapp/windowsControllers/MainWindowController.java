@@ -31,31 +31,45 @@ public class MainWindowController implements Initializable {
     @FXML
     private TextArea conversation;
     @FXML
-    private TextArea messageText;
+    private TextArea messageTextArea = new TextArea();
     @FXML
     private ComboBox<String> codingAlgorithmComboBox = new ComboBox<>();
     @FXML
-    private Label sendFileLabel;
+    private Label sendFileLabel = new Label("");
     @FXML
     private Button chooseFileButton = new Button();
     @FXML
     private Button sendFileButton = new Button();
     @FXML
     private Button sendMessageButton = new Button();
-    //private final List<Button> _requireValidSessionKeyButtons = ;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         codingAlgorithmComboBox.setItems(FXCollections.observableArrayList("ECB", "CBC"));
         codingAlgorithmComboBox.setOnAction((event) -> {
-            // TODO MS wybrana wartość powinna być wysłana do drugiego użytkownika
-            System.out.println(codingAlgorithmComboBox.getValue());
+            // Sending messages and files should be disabled until session key is generated and encryption algorithm chosen
+            enableUiComponents();
         });
 
-        sendFileLabel.setText("");
-        messageText.setDisable(true);
+        // Sending messages and files should be disabled until session key is generated and encryption algorithm chosen
+        disableUiComponents();
+    }
 
+    /**
+     * Method disable some buttons and textFields
+     */
+    public void disableUiComponents() {
+        codingAlgorithmComboBox.setDisable(true);
+        messageTextArea.setDisable(true);
         disableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+    }
+
+    /**
+     * Method enable some buttons and textFields
+     */
+    public void enableUiComponents() {
+        enableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
+        messageTextArea.setDisable(false);
     }
 
     public void setOutStream(ObjectOutputStream outStream) {
@@ -96,16 +110,17 @@ public class MainWindowController implements Initializable {
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidAlgorithmParameterException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        var input = messageText.getText();
 
-        if (!input.isBlank()) {
-            var encrypted = encrypt(input);
-            System.out.println(encrypted);
+        var userText = messageTextArea.getText().trim();
 
-            outStream.writeObject(new Message(input));
+        if (!userText.isBlank()) {
+            var encryptedText = encrypt(userText);
+            System.out.println("Encrypted text: " + encryptedText);
 
-            conversation.setText(conversation.getText().concat("Me: ").concat(input).concat("\n"));
-            messageText.clear();
+            outStream.writeObject(new Message(userText));
+
+            conversation.setText(conversation.getText().concat("Me: ").concat(userText).concat("\n"));
+            messageTextArea.clear();
         }
     }
 
@@ -114,20 +129,33 @@ public class MainWindowController implements Initializable {
     }
 
     @FXML
-    public void onGenerateSessionKeyClick() {
+    public void onGenerateSessionKeyClick()
+            throws IOException {
+
         _sessionKey = UUID.randomUUID().toString();
+        System.out.println("Generated new session key: " + _sessionKey);
+        codingAlgorithmComboBox.setDisable(false);
 
-        enableButtons(Arrays.asList(chooseFileButton, sendFileButton, sendMessageButton));
-        messageText.setDisable(false);
-
-        // TODO MS wysłać ramkę do drugiego użytkownika
-        // zaszyfrować klucz sesji przy pomocy publicznego klucza RSA tego drugiedo użytkownika
-
-        System.out.println(_sessionKey);
+        // TODO MS get OTHER USER public RSA key here
+        // PublicKey publicKey;
+        // var encrypted = RSAUtil.encryptSessionKeyWithRSA(_sessionKey, publicKey);
+        // outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encrypted));
+        // System.out.println("Encrypted new session key: " + encrypted);
     }
 
-    public void setSessionKey(String sessionKey) {
+    public void onEncryptedSessionKeyReceived(Message message) {
+        var encryptedSessionKey = message.getText();
+        System.out.println("Received encrypted session key: " + encryptedSessionKey);
+
+        // TODO MS get MY private RSA key here
+//                            PrivateKey privateKey;
+//                            var decryptedSessionKey = RSAUtil.decryptSessionKeyWithRSA(encryptedSessionKey.getBytes(), privateKey);
+//                            mainWindowController.setSessionKey(decryptedSessionKey);
+    }
+
+    private void setSessionKey(String sessionKey) {
         _sessionKey = sessionKey;
+        System.out.println("New session key: " + _sessionKey);
     }
 
     private void sendFile(String path) throws Exception {
