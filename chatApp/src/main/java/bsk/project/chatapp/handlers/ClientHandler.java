@@ -47,7 +47,8 @@ public class ClientHandler implements Runnable{
             BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
                 String message = console.readLine();
-                outStream.writeObject(new Message(message));
+                // TODO MS
+                //  outStream.writeObject(new Message(message));
             }
 
         } catch (IOException e) {

@@ -17,7 +17,6 @@ public class PasswordUtil {
     }
 
     public static String getPassword() {
-        System.out.println(new File(".").getAbsolutePath());
         // File file = new File("./keys/password/password.txt");
         File file = new File("chatapp/keys/password/password.txt");
         try {

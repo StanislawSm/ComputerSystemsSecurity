@@ -1,8 +1,10 @@
 package bsk.project.chatapp.windowsControllers;
 
 import bsk.project.chatapp.encryption.AESUtil;
+import bsk.project.chatapp.encryption.RSAUtil;
 import bsk.project.chatapp.keys.KeysUtil;
 import bsk.project.chatapp.message.Message;
+import bsk.project.chatapp.message.MessageType;
 import bsk.project.chatapp.password.PasswordUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -117,42 +119,54 @@ public class MainWindowController implements Initializable {
             var encryptedText = encrypt(userText);
             System.out.println("Encrypted text: " + encryptedText);
 
-            outStream.writeObject(new Message(userText));
+            //outStream.writeObject(new Message(userText));
+            var cipherMode = codingAlgorithmComboBox.getValue();
+            outStream.writeObject(new Message(encryptedText, cipherMode));
 
             conversation.setText(conversation.getText().concat("Me: ").concat(userText).concat("\n"));
             messageTextArea.clear();
         }
     }
 
-    public void onMessageReceived(String message) {
-        conversation.setText(conversation.getText().concat("Him: ").concat(message).concat("\n"));
+    public void onMessageReceived(Message message)
+            throws InvalidAlgorithmParameterException, NoSuchPaddingException,
+            IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException,
+            BadPaddingException, InvalidKeyException {
+
+        var decryptedText = decrypt(message);
+        conversation.setText(conversation.getText().concat("Him: ").concat(decryptedText).concat("\n"));
     }
 
     @FXML
     public void onGenerateSessionKeyClick()
-            throws IOException {
-
-        onGenerateSessionKeyButtonClick(); // TODO MS
+            throws IOException, NoSuchPaddingException, IllegalBlockSizeException,
+            NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 
         _sessionKey = UUID.randomUUID().toString();
         System.out.println("Generated new session key: " + _sessionKey);
         codingAlgorithmComboBox.setDisable(false);
 
         // TODO MS get OTHER USER public RSA key here
-        // PublicKey publicKey;
-        // var encrypted = RSAUtil.encryptSessionKeyWithRSA(_sessionKey, publicKey);
-        // outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encrypted));
-        // System.out.println("Encrypted new session key: " + encrypted);
+        PublicKey publicKey = getClientPublicKey();
+        var encrypted = RSAUtil.encryptSessionKeyWithRSA(_sessionKey, publicKey);
+        System.out.println("Encrypted new session key: " + encrypted);
+        outStream.writeObject(new Message(MessageType.ENCRYPTED_SECRET, encrypted, "none"));
     }
 
-    public void onEncryptedSessionKeyReceived(Message message) {
+    public void onEncryptedSessionKeyReceived(Message message)
+            throws NoSuchPaddingException, IllegalBlockSizeException,
+            NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+
         var encryptedSessionKey = message.getText();
+        var encryptedSessionKeyBytes = Base64.getDecoder().decode(message.getText());
         System.out.println("Received encrypted session key: " + encryptedSessionKey);
 
         // TODO MS get MY private RSA key here
-//                            PrivateKey privateKey;
-//                            var decryptedSessionKey = RSAUtil.decryptSessionKeyWithRSA(encryptedSessionKey.getBytes(), privateKey);
-//                            mainWindowController.setSessionKey(decryptedSessionKey);
+        PrivateKey privateKey = getClientPrivateKey();
+        var decryptedSessionKey = RSAUtil.decryptSessionKeyWithRSA(encryptedSessionKeyBytes, privateKey);
+        setSessionKey(decryptedSessionKey);
+
+        codingAlgorithmComboBox.setDisable(false);
     }
 
     private void setSessionKey(String sessionKey) {
@@ -193,6 +207,23 @@ public class MainWindowController implements Initializable {
                 : AESUtil.encrypt(algorithmKey, input, key, ivSpec);
     }
 
+    private String decrypt(Message message)
+            throws NoSuchAlgorithmException, InvalidKeySpecException,
+            NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException {
+
+        var ivSpec = AESUtil.generateIv(); // TODO MS co zorbić z generowaniem IV?
+        String password = _sessionKey;
+        SecretKey key = AESUtil.getKeyFromPassword(password);
+
+        var algorithm = message.getCypherMode();
+        var algorithmKey = "AES/" + algorithm + "/PKCS5Padding";
+
+        return Objects.equals(algorithm, "ECB")
+                ? AESUtil.decrypt(algorithmKey, message.getText(), key)
+                : AESUtil.decrypt(algorithmKey, message.getText(), key, ivSpec);
+    }
+
     private void disableButtons(List<Button> buttons) {
         buttons.forEach(b -> b.setDisable(true));
     }
@@ -201,17 +232,21 @@ public class MainWindowController implements Initializable {
         buttons.forEach(b -> b.setDisable(false));
     }
 
-    // TODO MS obgadać ze Stachem
-    public void onGenerateSessionKeyButtonClick(){
-        //generate session key
-        //get keys from storage
+    public PrivateKey getClientPrivateKey() {
+        return getClientKeyPair().getPrivate();
+    }
+
+    public PublicKey getClientPublicKey() {
+        return getClientKeyPair().getPublic();
+    }
+
+    private KeyPair getClientKeyPair() {
         KeyPair clientKeyPair;
         try {
             clientKeyPair = KeysUtil.getKeyPairFromKeyStore("clientKeys/keystoreClient.jks", Objects.requireNonNull(PasswordUtil.getPassword()), "client");
+            return clientKeyPair;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        System.out.println(clientKeyPair.toString());
-        //cipher session key with public key
     }
 }

@@ -30,7 +30,7 @@ public class MessageReceiverThreadBuilder implements Runnable {
                     switch (message.getMessageType()) {
                         case TEXT -> {
                             System.out.println("["+ receiverType + "]" + " Received text: " + message.getText());
-                            mainWindowController.onMessageReceived(message.getText());
+                            mainWindowController.onMessageReceived(message);
                         }
                         case FILE_READY -> {
                             System.out.println("["+ receiverType + "]" + " file ready");
