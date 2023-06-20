@@ -210,14 +210,12 @@ public class MainWindowController implements Initializable {
         outStream.writeObject(new Message(MessageType.FILE_READY, encrypt(_selectedFile.getName())));
         int bytes = 0;
         File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
         File encryptedFile = encryptFile(file);
-
-        // TODO SS powinieneś mieć tutaj zaszyfrowany plik
+        FileInputStream fileInputStream = new FileInputStream(encryptedFile);
 
         // send file size
-        outStream.writeLong(file.length());
-        long fileSize = file.length();
+        outStream.writeLong(encryptedFile.length());
+        long fileSize = encryptedFile.length();
         long sentChunks = 0;
         // break file into chunks
         byte[] buffer = new byte[4 * 1024];
