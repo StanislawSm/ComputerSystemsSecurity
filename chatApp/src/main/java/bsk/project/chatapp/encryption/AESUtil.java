@@ -124,7 +124,13 @@ public class AESUtil {
             BadPaddingException, IllegalBlockSizeException {
 
         Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(Cipher.DECRYPT_MODE, key, iv);
+
+        if(iv == null){
+            cipher.init(Cipher.DECRYPT_MODE, key);
+        } else {
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+        }
+
         FileInputStream inputStream = new FileInputStream(inputFile);
         FileOutputStream outputStream = new FileOutputStream(outputFile);
 

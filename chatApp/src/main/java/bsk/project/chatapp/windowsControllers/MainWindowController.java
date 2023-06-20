@@ -224,8 +224,6 @@ public class MainWindowController implements Initializable {
             outStream.flush();
             sentChunks += 4*1024;
 
-            Thread.sleep(1000);
-
             double progress = (double) sentChunks / fileSize;
             Platform.runLater(() -> setProgressBarProgress(progress));
 
@@ -235,7 +233,7 @@ public class MainWindowController implements Initializable {
         encryptedFile.delete();
     }
 
-    private void receiveFile(String fileName, ObjectInputStream in) throws Exception {
+    private void downloadFile(String fileName, ObjectInputStream in) throws Exception {
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(fileName);
 
@@ -248,6 +246,14 @@ public class MainWindowController implements Initializable {
             setProgressBarProgress(1.0 - (double)currentSize/size);
         }
         fileOutputStream.close();
+
+        var encryptedFile = new File(fileName);
+        var decryptedFile = new File("client_" + fileName);
+        SecretKey key = AESUtil.getKeyFromPassword(_sessionKey);
+        var algorithm = "AES/" + _cipherMode + "/PKCS5Padding";
+        var ivSpec = Objects.equals(_cipherMode, "ECB") ? null : _ivSpec;
+        AESUtil.decryptFile(algorithm, key, ivSpec, encryptedFile, decryptedFile);
+        encryptedFile.delete();
     }
 
     private String encrypt(String input) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
@@ -263,7 +269,7 @@ public class MainWindowController implements Initializable {
         System.out.println("[INFO] Received File Ready message");
         var filename = decrypt(message);
         conversation.setText(conversation.getText().concat("Him: ").concat(filename).concat("\n"));
-        receiveFile(filename, in);
+        downloadFile(filename, in);
     }
 
     private File encryptFile(File file) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException {

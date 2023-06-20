@@ -18,8 +18,9 @@ public class KeysUtil {
      @param ownerName must be client or server
      */
     public static KeyPair getKeyPairFromKeyStore(String fileName, String password, String ownerName) throws Exception {
-        File initialFile = new File("./keys/" + fileName);
-        // File initialFile = new File("chatapp/keys/" + fileName);
+        //File initialFile = new File("./keys/" + fileName);
+        // TODO MS
+        File initialFile = new File("chatapp/keys/" + fileName);
         InputStream ins = new FileInputStream(initialFile);
 
         KeyStore keyStore = KeyStore.getInstance("JCEKS");
