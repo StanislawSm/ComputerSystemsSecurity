@@ -1,13 +1,10 @@
 package bsk.project.chatapp.receiver;
 
-import bsk.project.chatapp.encryption.RSAUtil;
 import bsk.project.chatapp.message.Message;
 import bsk.project.chatapp.windowsControllers.MainWindowController;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.security.PrivateKey;
 
 public class MessageReceiverThreadBuilder implements Runnable {
 
@@ -29,7 +26,7 @@ public class MessageReceiverThreadBuilder implements Runnable {
                 if (message != null) {
                     switch (message.getMessageType()) {
                         case TEXT -> mainWindowController.onMessageReceived(message);
-                        case FILE_READY -> receiveFile("./" + message.getText());
+                        case FILE_READY -> mainWindowController.onFileReadyMessageReceived(message, in);
                         case ENCRYPTED_SECRET -> mainWindowController.onEncryptedSessionKeyReceived(message);
                         case CYPHER_MODE_CHANGED -> mainWindowController.onCipherModeChange(message);
                         default -> {
@@ -42,21 +39,5 @@ public class MessageReceiverThreadBuilder implements Runnable {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    private void receiveFile(String fileName) throws Exception {
-        System.out.println("File ready");
-        int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
-
-        long currentSize = in.readLong();     // read file size
-        long size = currentSize;
-        byte[] buffer = new byte[4 * 1024];
-        while (currentSize > 0 && (bytes = in.read(buffer, 0, (int) Math.min(buffer.length, currentSize))) != -1) {
-            fileOutputStream.write(buffer, 0, bytes);
-            currentSize -= bytes;      // read up to file size
-            mainWindowController.setProgressBarProgress((double)currentSize/size);
-        }
-        fileOutputStream.close();
     }
 }
