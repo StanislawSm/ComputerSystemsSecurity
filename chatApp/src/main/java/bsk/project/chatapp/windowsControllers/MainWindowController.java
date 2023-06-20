@@ -1,5 +1,6 @@
 package bsk.project.chatapp.windowsControllers;
 
+import bsk.project.chatapp.alertBox.AlertBox;
 import bsk.project.chatapp.encryption.AESUtil;
 import bsk.project.chatapp.encryption.RSAUtil;
 import bsk.project.chatapp.keys.KeysUtil;
@@ -105,19 +106,15 @@ public class MainWindowController implements Initializable {
 
     @FXML
     protected void onSendFileButtonClick() throws Exception {
-//        Stage stage = (Stage) conversation.getScene().getWindow();
-//        FileChooser file = new FileChooser();
-//        file.setTitle("Choose File");
-//        File loadedFilePath = file.showOpenDialog(stage);
         if (_selectedFile == null) {
-            System.out.println("Choose file to send!");
+            AlertBox.infoBox("Choose file to send first!", "File not selected");
             return;
         }
 
         System.out.println(_selectedFile.getName());
-        // outStream.writeObject(new Message("file ready to be sent"));
-        // outStream.writeObject(new Message(MessageType.FILE_READY, loadedFilePath.getName()));
-        // sendFile(loadedFilePath.getPath());
+         outStream.writeObject(new Message("[INFO] File '" + _selectedFile.getName() + "' ready to be sent"));
+         outStream.writeObject(new Message(MessageType.FILE_READY, _selectedFile.getName()));
+         sendFile(_selectedFile.getPath());
     }
 
     @FXML
@@ -205,6 +202,9 @@ public class MainWindowController implements Initializable {
         int bytes = 0;
         File file = new File(path);
         FileInputStream fileInputStream = new FileInputStream(file);
+        var encryptedFile = encryptFile(file);
+
+        // TODO SS powinieneś mieć tutaj zaszyfrowany plik
 
         // send file size
         outStream.writeLong(file.length());
@@ -228,6 +228,19 @@ public class MainWindowController implements Initializable {
         return Objects.equals(_cipherMode, "ECB")
                 ? AESUtil.encrypt(algorithm, input, key)
                 : AESUtil.encrypt(algorithm, input, key, _ivSpec);
+    }
+
+    private File encryptFile(File file) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException {
+        SecretKey key = AESUtil.getKeyFromPassword(_sessionKey);
+        var algorithm = "AES/" + _cipherMode + "/PKCS5Padding";
+
+        var encryptedFileName = file.getAbsolutePath() + "encrypted_" + file.getName();
+        var encryptedFile = new File(encryptedFileName);
+
+        // TODO MS pytanie czy dla ECB też bez _ivSpec
+        AESUtil.encryptFile(algorithm, key, _ivSpec, file, encryptedFile);
+
+        return encryptedFile;
     }
 
     private String decrypt(Message message) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
