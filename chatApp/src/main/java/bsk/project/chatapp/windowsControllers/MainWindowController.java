@@ -7,6 +7,7 @@ import bsk.project.chatapp.keys.KeysUtil;
 import bsk.project.chatapp.message.Message;
 import bsk.project.chatapp.message.MessageType;
 import bsk.project.chatapp.password.PasswordUtil;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -49,6 +50,7 @@ public class MainWindowController implements Initializable {
     private Button sendMessageButton = new Button();
     @FXML
     private ProgressBar progressBar = new ProgressBar();
+    private double progressBarProgres = 0.0;
 
 
     @Override
@@ -110,11 +112,17 @@ public class MainWindowController implements Initializable {
             AlertBox.infoBox("Choose file to send first!", "File not selected");
             return;
         }
+        System.out.println("[INFO] " + _selectedFile.getName() + " ready to be sent");
 
-        System.out.println(_selectedFile.getName());
-         outStream.writeObject(new Message("[INFO] File '" + _selectedFile.getName() + "' ready to be sent"));
-         outStream.writeObject(new Message(MessageType.FILE_READY, _selectedFile.getName()));
-         sendFile(_selectedFile.getPath());
+        // Start the file sending task on a separate thread
+        Thread thread = new Thread(() -> {
+            try {
+                sendFileTask(_selectedFile.getPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
     }
 
     @FXML
@@ -198,27 +206,48 @@ public class MainWindowController implements Initializable {
         System.out.println("[INFO] New session key: " + _sessionKey);
     }
 
-    private void sendFile(String path) throws Exception {
+    private void sendFileTask(String path) throws Exception {
+        outStream.writeObject(new Message(MessageType.FILE_READY, encrypt(_selectedFile.getName())));
         int bytes = 0;
         File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        var encryptedFile = encryptFile(file);
-
-        // TODO SS powinieneś mieć tutaj zaszyfrowany plik
+        File encryptedFile = encryptFile(file);
+        FileInputStream fileInputStream = new FileInputStream(encryptedFile);
 
         // send file size
-        outStream.writeLong(file.length());
-        long fileSize = file.length();
+        outStream.writeLong(encryptedFile.length());
+        long fileSize = encryptedFile.length();
         long sentChunks = 0;
         // break file into chunks
         byte[] buffer = new byte[4 * 1024];
         while ((bytes = fileInputStream.read(buffer)) != -1) {
             outStream.write(buffer, 0, bytes);
             outStream.flush();
-            sentChunks++;
-            progressBar.setProgress((double)sentChunks/fileSize);
+            sentChunks += 4*1024;
+
+            Thread.sleep(1000);
+
+            double progress = (double) sentChunks / fileSize;
+            Platform.runLater(() -> setProgressBarProgress(progress));
+
+
         }
         fileInputStream.close();
+        encryptedFile.delete();
+    }
+
+    private void receiveFile(String fileName, ObjectInputStream in) throws Exception {
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+
+        long currentSize = in.readLong();     // read file size
+        long size = currentSize;
+        byte[] buffer = new byte[4 * 1024];
+        while (currentSize > 0 && (bytes = in.read(buffer, 0, (int) Math.min(buffer.length, currentSize))) != -1) {
+            fileOutputStream.write(buffer, 0, bytes);
+            currentSize -= bytes;      // read up to file size
+            setProgressBarProgress(1.0 - (double)currentSize/size);
+        }
+        fileOutputStream.close();
     }
 
     private String encrypt(String input) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
@@ -230,16 +259,25 @@ public class MainWindowController implements Initializable {
                 : AESUtil.encrypt(algorithm, input, key, _ivSpec);
     }
 
+    public void onFileReadyMessageReceived(Message message, ObjectInputStream in) throws Exception {
+        System.out.println("[INFO] Received File Ready message");
+        var filename = decrypt(message);
+        conversation.setText(conversation.getText().concat("Him: ").concat(filename).concat("\n"));
+        receiveFile(filename, in);
+    }
+
     private File encryptFile(File file) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException {
         SecretKey key = AESUtil.getKeyFromPassword(_sessionKey);
         var algorithm = "AES/" + _cipherMode + "/PKCS5Padding";
 
-        var encryptedFileName = file.getAbsolutePath() + "encrypted_" + file.getName();
+        var encryptedFileName = file.getAbsolutePath() + "ENC";
         var encryptedFile = new File(encryptedFileName);
 
-        // TODO MS pytanie czy dla ECB też bez _ivSpec
-        AESUtil.encryptFile(algorithm, key, _ivSpec, file, encryptedFile);
-
+        if(_cipherMode.equals("ECB")){
+            AESUtil.encryptFile(algorithm, key, null, file, encryptedFile);
+        } else {
+            AESUtil.encryptFile(algorithm, key, _ivSpec, file, encryptedFile);
+        }
         return encryptedFile;
     }
 
