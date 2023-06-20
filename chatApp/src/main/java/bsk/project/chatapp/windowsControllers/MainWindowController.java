@@ -7,6 +7,7 @@ import bsk.project.chatapp.keys.KeysUtil;
 import bsk.project.chatapp.message.Message;
 import bsk.project.chatapp.message.MessageType;
 import bsk.project.chatapp.password.PasswordUtil;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -49,6 +50,7 @@ public class MainWindowController implements Initializable {
     private Button sendMessageButton = new Button();
     @FXML
     private ProgressBar progressBar = new ProgressBar();
+    private double progressBarProgres = 0.0;
 
 
     @Override
@@ -110,9 +112,17 @@ public class MainWindowController implements Initializable {
             AlertBox.infoBox("Choose file to send first!", "File not selected");
             return;
         }
-
         System.out.println("[INFO] " + _selectedFile.getName() + " ready to be sent");
-        sendFile(_selectedFile.getPath());
+
+        // Start the file sending task on a separate thread
+        Thread thread = new Thread(() -> {
+            try {
+                sendFileTask(_selectedFile.getPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
     }
 
     @FXML
@@ -196,7 +206,7 @@ public class MainWindowController implements Initializable {
         System.out.println("[INFO] New session key: " + _sessionKey);
     }
 
-    private void sendFile(String path) throws Exception {
+    private void sendFileTask(String path) throws Exception {
         outStream.writeObject(new Message(MessageType.FILE_READY, encrypt(_selectedFile.getName())));
         int bytes = 0;
         File file = new File(path);
@@ -215,10 +225,13 @@ public class MainWindowController implements Initializable {
             outStream.write(buffer, 0, bytes);
             outStream.flush();
             sentChunks += 4*1024;
+
             Thread.sleep(1000);
-            setProgressBarProgress((double)sentChunks/fileSize);
-            
-            System.out.println((double)sentChunks/fileSize);
+
+            double progress = (double) sentChunks / fileSize;
+            Platform.runLater(() -> setProgressBarProgress(progress));
+
+
         }
         fileInputStream.close();
         encryptedFile.delete();
